@@ -1,23 +1,43 @@
 package com.backend.controller;
 
+import com.backend.domain.cctv.Cctv;
+import com.backend.domain.cctv.CctvRepository;
 import com.backend.domain.traffic.TrafficEvent;
+import com.backend.dto.CctvResponseDto;
 import com.backend.service.TrafficService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+
 import java.util.List;
 
+@Slf4j
 @RestController
 @RequestMapping("/api")
 @RequiredArgsConstructor
 public class MainController {
     private final TrafficService trafficService;
+    private final CctvRepository cctvRepository;
 
     @GetMapping("/events")
     public List<TrafficEvent> getEvents() {
         return trafficService.getAllEvents();
     }
 
-    // CCTV 등 추가 API...
+    @GetMapping("/cctvs")
+    public CctvResponseDto getCctvs(@RequestParam(name = "pageIndex", defaultValue = "1") int page,
+                                    @RequestParam(name = "pageSize", defaultValue = "8") int size) {
+        // 프론트엔드에서 1페이지부터 시작한다고 가정하면, 백엔드(Spring Data JPA)는 0페이지부터 시작하므로 -1 처리
+        int pageNumber = (page > 0) ? page - 1 : 0;
+        Pageable pageable = PageRequest.of(pageNumber, size);
+        Page<Cctv> cctvPage = cctvRepository.findAll(pageable);
+        log.info(cctvPage.toString());
+        return CctvResponseDto.from(cctvPage);
+    }
 }

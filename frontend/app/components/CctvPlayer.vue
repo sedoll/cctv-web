@@ -1,38 +1,58 @@
 <template>
   <div class="video-wrapper">
-    <video ref="videoElement" controls muted autoplay playsinline class="cctv-video"></video>
+    <video
+        ref="vElement"
+        controls
+        muted
+        autoplay
+        playsinline
+        class="cctv-video"
+        disablePictureInPicture
+        controlsList="nodownload"
+    ></video>
   </div>
 </template>
 
 <script setup>
 import { ref, onMounted, onBeforeUnmount, watch } from 'vue';
-import Hls from 'hls.js';
 
 const props = defineProps({
   src: { type: String, required: true }
 });
 
-const videoElement = ref(null);
-let hls = null;
+const vElement = ref(null);
+let blobUrl = null;
 
-const initPlayer = () => {
-  if (!props.src || !videoElement.value) return;
+const loadSecureVideo = async (url) => {
+  if (!url) return;
 
-  if (Hls.isSupported()) {
-    if (hls) hls.destroy();
-    hls = new Hls();
-    hls.loadSource(props.src);
-    hls.attachMedia(videoElement.value);
-  } else if (videoElement.value.canPlayType('application/vnd.apple.mpegurl')) {
-    videoElement.value.src = props.src;
+  try {
+    // 1. 비디오 데이터를 Blob으로 가져옴
+    const response = await fetch(url);
+    const buffer = await response.blob();
+
+    // 2. 이전 Blob URL 메모리 해제
+    if (blobUrl) URL.revokeObjectURL(blobUrl);
+
+    // 3. 임시 Blob URL 생성 (blob:http://localhost:3000/...)
+    blobUrl = URL.createObjectURL(buffer);
+
+    // 4. 비디오 엘리먼트에 할당
+    if (vElement.value) {
+      vElement.value.src = blobUrl;
+    }
+  } catch (e) {
+    console.error("Secure load failed");
   }
 };
 
-onMounted(initPlayer);
-watch(() => props.src, initPlayer); // URL이 바뀌면 영상 교체
+onMounted(() => loadSecureVideo(props.src));
+
+// URL 변경 감지 시 재로드
+watch(() => props.src, (newUrl) => loadSecureVideo(newUrl));
 
 onBeforeUnmount(() => {
-  if (hls) hls.destroy();
+  if (blobUrl) URL.revokeObjectURL(blobUrl);
 });
 </script>
 

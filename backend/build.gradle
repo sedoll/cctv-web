@@ -48,6 +48,9 @@ dependencies {
     annotationProcessor 'org.projectlombok:lombok'
     implementation 'org.jsoup:jsoup:1.17.2' // XSS 방지
 
+    // json
+    implementation 'org.json:json:20231013'
+
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testImplementation 'org.springframework.security:spring-security-test'
 }

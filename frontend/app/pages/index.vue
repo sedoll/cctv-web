@@ -11,27 +11,83 @@
     </div>
 
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-      <div v-for="(cctv, index) in cctvList" :key="index" class="bg-white dark:bg-gray-800 rounded-lg overflow-hidden shadow-sm hover:shadow-lg transition-all duration-200 border border-gray-200 dark:border-gray-700 flex flex-col group">
-        <div class="relative aspect-video bg-gray-200 dark:bg-gray-700">
-          <CctvPlayer v-if="cctv.url" :src="cctv.url" />
-          <div v-else class="w-full h-full flex items-center justify-center text-gray-500">영상 준비중</div>
+      <div v-for="(cctv, index) in cctvList" :key="cctv.id" class="bg-white dark:bg-gray-800 rounded-lg overflow-hidden shadow-sm hover:shadow-lg transition-all duration-200 border border-gray-200 dark:border-gray-700 flex flex-col group">
+        <div class="relative aspect-video bg-gray-200 dark:bg-gray-700 cursor-pointer" @click="openModal(cctv)">
+          <img :src="cctv.thumbnailUrl || thumImg" :alt="cctv.cctvName" loading="lazy" class="w-full h-[189px] object-cover" alt="CCTV Thumbnail" />
 
-          <div class="absolute top-2 left-2 flex items-center gap-1 bg-black/60 px-2 py-0.5 rounded text-white text-[10px] font-bold tracking-wider uppercase">
-            <span class="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse"></span> Live
-          </div>
+<!--          <div class="absolute top-2 left-2 flex items-center gap-1 bg-black/60 px-2 py-0.5 rounded text-white text-[10px] font-bold tracking-wider uppercase">-->
+<!--            <span class="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse"></span> Live-->
+<!--          </div>-->
         </div>
 
         <div class="p-4 flex flex-col justify-between flex-grow">
           <div>
-            <div class="flex justify-between items-start mb-1">
-              <h3 class="text-sm font-bold text-gray-900 dark:text-white truncate">{{ cctv.name }}</h3>
+            <div class="flex justify-between items-start mb-1 cursor-pointer" @click="openModal(cctv)">
+              <h3 class="text-sm font-bold text-gray-900 dark:text-white truncate w-[200px]">{{ cctv.cctvName }}</h3>
               <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300">원활</span>
             </div>
-            <p class="text-xs text-gray-500 dark:text-gray-400">ID: CAM-{{ index + 100 }}</p>
+            <p class="text-xs text-gray-500 dark:text-gray-400">ID: CAM-{{ cctv.id }}</p>
           </div>
           <div class="mt-3 flex items-center justify-between text-xs text-gray-400 dark:text-gray-500">
-            <span>업데이트: 실시간</span>
+            <span>업데이트: 매일 10분마다</span>
           </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Pagination -->
+    <div class="mt-8 flex justify-center" v-if="totalPages > 0">
+      <nav class="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
+        <button
+          @click="page > 1 ? page-- : null"
+          :disabled="page === 1"
+          class="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-sm font-medium text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700"
+          :class="{ 'opacity-50 cursor-not-allowed': page === 1 }"
+        >
+          <span class="sr-only">Previous</span>
+          <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+            <path fill-rule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clip-rule="evenodd" />
+          </svg>
+        </button>
+
+        <button
+            v-for="p in displayedPages"
+            :key="p"
+            @click="page = p"
+            class="relative inline-flex items-center px-4 py-2 border text-sm font-medium"
+            :class="p === page ? 'z-10 bg-blue-50 dark:bg-blue-900 border-blue-500 text-blue-600 dark:text-blue-200' : 'bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700'"
+        >
+            {{ p }}
+        </button>
+
+        <button
+          @click="page < totalPages ? page++ : null"
+          :disabled="page === totalPages"
+          class="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-sm font-medium text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700"
+          :class="{ 'opacity-50 cursor-not-allowed': page === totalPages }"
+        >
+          <span class="sr-only">Next</span>
+          <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+            <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd" />
+          </svg>
+        </button>
+      </nav>
+    </div>
+
+    <!-- CCTV Modal -->
+    <div v-if="isModalOpen" class="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4" @click.self="closeModal">
+      <div class="relative w-full max-w-4xl bg-black rounded-lg overflow-hidden shadow-2xl">
+        <button @click="closeModal" class="absolute top-4 right-4 z-10 text-white hover:text-gray-300 bg-black/50 rounded-full p-1">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+        <div class="aspect-video w-full">
+           <CctvPlayer v-if="selectedCctv?.cctvUrl" :src="selectedCctv.cctvUrl" />
+           <div v-else class="w-full h-full flex items-center justify-center text-gray-500">영상 준비중</div>
+        </div>
+        <div class="p-4 bg-white dark:bg-gray-800">
+            <h3 class="text-lg font-bold text-gray-900 dark:text-white">{{ selectedCctv?.cctvName }}</h3>
         </div>
       </div>
     </div>
@@ -39,14 +95,60 @@
 </template>
 
 <script setup>
-import { ref } from 'vue';
-import CctvPlayer from '~/components/CctvPlayer.vue'; // 컴포넌트 임포트
+import { computed, ref } from 'vue';
+import CctvPlayer from '~/components/CctvPlayer.vue';
+import thumImg from '~/assets/img/thum-img.png';
 
-// 실제 데이터로 교체하세요
-const cctvList = ref([
-  { name: '강남대로 (신논현)', url: 'https://cctvsec.ktict.co.kr/...' },
-  { name: '올림픽대로 (여의도)', url: '' },
-  { name: '경부고속도로 (양재)', url: '' },
-  { name: '강변북로 (반포)', url: '' }
-]);
+const page = ref(1);
+const pageSize = ref(8);
+
+const { data: cctvPage, error } = await useFetch('/api/cctvs', {
+  params: {
+    pageIndex: page,
+    pageSize: pageSize
+  },
+  watch: [page]
+});
+
+// 에러 처리 추가
+if (error.value) {
+  console.error('Failed to fetch CCTV data:', error.value);
+}
+
+const cctvList = computed(() => cctvPage.value?.cctvs || []);
+const totalPages = computed(() => cctvPage.value?.totalPages || 0);
+
+const displayedPages = computed(() => {
+  const total = totalPages.value;
+  const current = page.value;
+  const pages = [];
+
+  let start = Math.max(1, current - 2);
+  let end = Math.min(total, start + 4);
+
+  if (end - start < 4) {
+      start = Math.max(1, end - 4);
+  }
+
+  // Ensure start is not less than 1
+  if (start < 1) start = 1;
+
+  for (let i = start; i <= end; i++) {
+    pages.push(i);
+  }
+  return pages;
+});
+
+const isModalOpen = ref(false);
+const selectedCctv = ref(null);
+
+const openModal = (cctv) => {
+  selectedCctv.value = cctv;
+  isModalOpen.value = true;
+};
+
+const closeModal = () => {
+  isModalOpen.value = false;
+  selectedCctv.value = null;
+};
 </script>
