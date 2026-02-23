@@ -4,6 +4,7 @@ import com.backend.domain.cctv.Cctv;
 import com.backend.domain.cctv.CctvRepository;
 import com.backend.domain.traffic.TrafficEvent;
 import com.backend.dto.CctvResponseDto;
+import com.backend.dto.TrafficEventResponseDto;
 import com.backend.service.TrafficService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -26,8 +27,11 @@ public class MainController {
     private final CctvRepository cctvRepository;
 
     @GetMapping("/events")
-    public List<TrafficEvent> getEvents() {
-        return trafficService.getAllEvents();
+    public TrafficEventResponseDto getEvents(@RequestParam(name = "pageIndex", defaultValue = "1") int page,
+                                             @RequestParam(name = "pageSize", defaultValue = "10") int size) {
+        int pageNumber = (page > 0) ? page - 1 : 0;
+        Page<TrafficEvent> eventPage = trafficService.getEventsPage(pageNumber, size);
+        return TrafficEventResponseDto.from(eventPage);
     }
 
     @GetMapping("/cctvs")
