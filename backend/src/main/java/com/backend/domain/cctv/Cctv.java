@@ -2,6 +2,11 @@ package com.backend.domain.cctv; // 👈 패키지 경로 확인!
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
+
+import java.time.LocalDateTime;
 
 @Entity
 @Getter
@@ -9,6 +14,7 @@ import lombok.*;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 @Table(name = "cctv")
+@EntityListeners(AuditingEntityListener.class)
 public class Cctv {
 
     @Id // PK 설정
@@ -34,14 +40,26 @@ public class Cctv {
     @Column(name="cctv_thumbnail")
     private String thumbnailUrl; // 썸네일 URL 필드 추가
 
+    @Column(name = "road_type")
+    private String roadType; // 도로 타입 (ex: 고속도로, its: 국도)
+
+    @CreatedDate
+    @Column(name = "create_date", updatable = false)
+    private LocalDateTime createDate; // 최초 생성일
+
+    @LastModifiedDate
+    @Column(name = "update_date")
+    private LocalDateTime updateDate; // 최근 수정일
+
     public void updateThumbnail(String url) {
         this.thumbnailUrl = url;
     }
 
-    public void updateData(String url, Double x, Double y, Integer type) {
+    public void updateData(String url, Double x, Double y, Integer type, String roadType) {
         this.cctvUrl = url;
         this.coordX = x;
         this.coordY = y;
         this.cctvType = type; // cctvType 필드 업데이트 추가
+        this.roadType = roadType;
     }
 }

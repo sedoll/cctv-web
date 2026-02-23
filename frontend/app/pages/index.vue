@@ -1,7 +1,7 @@
 <template>
   <div>
     <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
-      <h1 class="text-2xl font-bold text-gray-900 dark:text-white">실시간 CCTV 모니터링</h1>
+      <h1 class="text-2xl font-bold text-gray-900 dark:text-white">CCTV 모니터링</h1>
       <div class="flex w-full md:w-auto gap-2">
         <div class="relative w-full md:w-64 group">
           <input type="text" class="block w-full pl-4 pr-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md leading-5 bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-blue-600 sm:text-sm shadow-sm" placeholder="위치 검색..." />
@@ -13,7 +13,7 @@
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
       <div v-for="(cctv, index) in cctvList" :key="cctv.id" class="bg-white dark:bg-gray-800 rounded-lg overflow-hidden shadow-sm hover:shadow-lg transition-all duration-200 border border-gray-200 dark:border-gray-700 flex flex-col group">
         <div class="relative aspect-video bg-gray-200 dark:bg-gray-700 cursor-pointer" @click="openModal(cctv)">
-          <img :src="cctv.thumbnailUrl || thumImg" :alt="cctv.cctvName" loading="lazy" class="w-full h-[189px] object-cover" alt="CCTV Thumbnail" />
+          <img :src="cctv.thumbnailUrl" @error="$event.target.src = thumImg" :alt="cctv.cctvName" loading="lazy" class="w-full h-[189px] object-cover" alt="CCTV Thumbnail" />
 
 <!--          <div class="absolute top-2 left-2 flex items-center gap-1 bg-black/60 px-2 py-0.5 rounded text-white text-[10px] font-bold tracking-wider uppercase">-->
 <!--            <span class="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse"></span> Live-->
@@ -23,13 +23,14 @@
         <div class="p-4 flex flex-col justify-between flex-grow">
           <div>
             <div class="flex justify-between items-start mb-1 cursor-pointer" @click="openModal(cctv)">
-              <h3 class="text-sm font-bold text-gray-900 dark:text-white truncate w-[200px]">{{ cctv.cctvName }}</h3>
-              <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300">원활</span>
+              <h3 class="text-sm font-bold text-gray-900 dark:text-white truncate w-[200px]" :title="cctv.cctvName">{{ cctv.cctvName }}</h3>
+              <span v-if="!cctv.roadType || cctv.roadType == 'ex'" class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium w-[66px] justify-center bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-300">고속도로</span>
+              <span v-if="cctv.roadType == 'its'" class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium w-[66px] justify-center bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300">국도</span>
             </div>
             <p class="text-xs text-gray-500 dark:text-gray-400">ID: CAM-{{ cctv.id }}</p>
           </div>
           <div class="mt-3 flex items-center justify-between text-xs text-gray-400 dark:text-gray-500">
-            <span>업데이트: 매일 10분마다</span>
+            <span>최근 업데이트: {{ formatDate(cctv.updateDate) }}</span>
           </div>
         </div>
       </div>
@@ -150,5 +151,16 @@ const openModal = (cctv) => {
 const closeModal = () => {
   isModalOpen.value = false;
   selectedCctv.value = null;
+};
+
+// 최근 업데이트 날짜 포멧팅
+const formatDate = (dateString) => {
+  if (!dateString) return '';
+  const date = new Date(dateString);
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  const hours = String(date.getHours()).padStart(2, '0');
+  const minutes = String(date.getMinutes()).padStart(2, '0');
+  return `${month}-${day} ${hours}:${minutes}`;
 };
 </script>
