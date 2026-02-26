@@ -5,6 +5,30 @@
       <p class="text-gray-500 dark:text-gray-400">실시간 사고, 공사, 통제 정보를 확인하세요.</p>
     </div>
 
+    <div class="mb-6 flex flex-col sm:flex-row gap-2">
+      <select
+          v-model="searchType"
+          class="w-full sm:w-44 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-sm text-gray-900 dark:text-white"
+      >
+        <option value="all">전체</option>
+        <option value="event_type">상황</option>
+        <option value="message">내용</option>
+      </select>
+      <input
+          v-model="searchInput"
+          @keyup.enter="handleSearch"
+          type="text"
+          placeholder="돌발상황 검색어 입력"
+          class="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-sm text-gray-900 dark:text-white placeholder-gray-500"
+      />
+      <button
+          @click="handleSearch"
+          class="px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700"
+      >
+        검색
+      </button>
+    </div>
+
     <div v-if="loading" class="text-center py-10 text-gray-500">데이터를 불러오는 중입니다...</div>
 
     <div v-else class="space-y-4">
@@ -133,6 +157,9 @@ const currentPage = ref(1);
 const totalPages = ref(1);
 const pageSize = 5;
 const openedEventId = ref(null);
+const searchType = ref('all');
+const searchInput = ref('');
+const searchKeyword = ref('');
 
 const displayedPages = computed(() => {
   const total = totalPages.value;
@@ -156,7 +183,13 @@ const displayedPages = computed(() => {
 const fetchEvents = async (page = 1) => {
   loading.value = true;
   try {
-    const res = await fetch(`/api/events?pageIndex=${page}&pageSize=${pageSize}`);
+    const params = new URLSearchParams({
+      pageIndex: String(page),
+      pageSize: String(pageSize),
+      searchType: searchType.value,
+      query: searchKeyword.value
+    });
+    const res = await fetch(`/api/events?${params.toString()}`);
     if (!res.ok) throw new Error('failed to fetch events');
 
     const data = await res.json();
@@ -179,6 +212,12 @@ const movePage = (page) => {
   if (page < 1 || page > totalPages.value) return;
   fetchEvents(page);
 };
+
+const handleSearch = () => {
+  searchKeyword.value = searchInput.value.trim();
+  fetchEvents(1);
+};
+
 
 const shortMessage = (message = '') => {
   if (message.length <= 30) return message;

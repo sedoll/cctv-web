@@ -28,19 +28,29 @@ public class MainController {
 
     @GetMapping("/events")
     public TrafficEventResponseDto getEvents(@RequestParam(name = "pageIndex", defaultValue = "1") int page,
-                                             @RequestParam(name = "pageSize", defaultValue = "10") int size) {
+                                             @RequestParam(name = "pageSize", defaultValue = "10") int size,
+                                             @RequestParam(name = "searchType", defaultValue = "all") String searchType,
+                                             @RequestParam(name = "query", required = false) String query) {
         int pageNumber = (page > 0) ? page - 1 : 0;
-        Page<TrafficEvent> eventPage = trafficService.getEventsPage(pageNumber, size);
+        Page<TrafficEvent> eventPage = trafficService.getEventsPage(pageNumber, size, searchType, query);
         return TrafficEventResponseDto.from(eventPage);
     }
 
     @GetMapping("/cctvs")
     public CctvResponseDto getCctvs(@RequestParam(name = "pageIndex", defaultValue = "1") int page,
-                                    @RequestParam(name = "pageSize", defaultValue = "8") int size) {
+                                    @RequestParam(name = "pageSize", defaultValue = "8") int size,
+                                    @RequestParam(name = "query", required = false) String query) {
         // 프론트엔드에서 1페이지부터 시작한다고 가정하면, 백엔드(Spring Data JPA)는 0페이지부터 시작하므로 -1 처리
         int pageNumber = (page > 0) ? page - 1 : 0;
         Pageable pageable = PageRequest.of(pageNumber, size);
-        Page<Cctv> cctvPage = cctvRepository.findAll(pageable);
+        Page<Cctv> cctvPage;
+
+        if (query != null && !query.trim().isEmpty()) {
+            cctvPage = cctvRepository.findByCctvNameContainingIgnoreCase(query.trim(), pageable);
+        } else {
+            cctvPage = cctvRepository.findAll(pageable);
+        }
+
         log.info(cctvPage.toString());
         return CctvResponseDto.from(cctvPage);
     }

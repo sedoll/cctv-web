@@ -94,9 +94,27 @@ public class TrafficService {
     }
 
     public Page<TrafficEvent> getEventsPage(int page, int size) {
-        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "startDate"));
-        return repository.findAll(pageable);
+        return getEventsPage(page, size, "all", "");
     }
+
+    public Page<TrafficEvent> getEventsPage(int page, int size, String searchType, String keyword) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "startDate"));
+        String trimmedKeyword = keyword == null ? "" : keyword.trim();
+
+        if (trimmedKeyword.isEmpty()) {
+            return repository.findAll(pageable);
+        }
+
+        String normalizedType = searchType == null ? "all" : searchType.trim().toLowerCase();
+
+        return switch (normalizedType) {
+            case "event_type" -> repository.findByEventTypeContainingIgnoreCase(trimmedKeyword, pageable);
+            case "message" -> repository.findByMessageContainingIgnoreCase(trimmedKeyword, pageable);
+            case "all" -> repository.findByEventTypeContainingIgnoreCaseOrMessageContainingIgnoreCase(trimmedKeyword, trimmedKeyword, pageable);
+            default -> repository.findByEventTypeContainingIgnoreCaseOrMessageContainingIgnoreCase(trimmedKeyword, trimmedKeyword, pageable);
+        };
+    }
+
 
     private List<TrafficEvent> parseEvents(String jsonString) {
         List<TrafficEvent> results = new ArrayList<>();

@@ -4,16 +4,27 @@
       <h1 class="text-2xl font-bold text-gray-900 dark:text-white">실시간 CCTV 모니터링</h1>
       <div class="flex w-full md:w-auto gap-2">
         <div class="relative w-full md:w-64 group">
-          <input type="text" class="block w-full pl-4 pr-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md leading-5 bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-blue-600 sm:text-sm shadow-sm" placeholder="위치 검색..." />
+          <input
+              v-model="searchInput"
+              @keyup.enter="handleSearch"
+              type="text"
+              class="block w-full pl-4 pr-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md leading-5 bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-blue-600 sm:text-sm shadow-sm"
+              placeholder="CCTV 이름 검색..."
+          />
         </div>
-        <button class="px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700">검색</button>
+        <button
+            @click="handleSearch"
+            class="px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700"
+        >
+          검색
+        </button>
       </div>
     </div>
 
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
       <div v-for="(cctv, index) in cctvList" :key="cctv.id" class="bg-white dark:bg-gray-800 rounded-lg overflow-hidden shadow-sm hover:shadow-lg transition-all duration-200 border border-gray-200 dark:border-gray-700 flex flex-col group">
         <div class="relative aspect-video bg-gray-200 dark:bg-gray-700 cursor-pointer" @click="openModal(cctv)">
-          <img :src="cctv.thumbnailUrl" @error="$event.target.src = thumImg" :alt="cctv.cctvName" loading="lazy" class="w-full h-[189px] object-cover" alt="CCTV Thumbnail" />
+          <img :src="cctv.thumbnailUrl ? cctv.thumbnailUrl : thumImg" @error="$event.target.src = thumImg" :alt="cctv.cctvName" loading="lazy" class="w-full h-[189px] object-cover" alt="CCTV Thumbnail" />
 
 <!--          <div class="absolute top-2 left-2 flex items-center gap-1 bg-black/60 px-2 py-0.5 rounded text-white text-[10px] font-bold tracking-wider uppercase">-->
 <!--            <span class="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse"></span> Live-->
@@ -102,13 +113,16 @@ import thumImg from '~/assets/img/thum-img.png';
 
 const page = ref(1);
 const pageSize = ref(8);
+const searchInput = ref('');
+const searchKeyword = ref('');
 
 const { data: cctvPage, error } = await useFetch('/api/cctvs', {
   params: {
     pageIndex: page,
-    pageSize: pageSize
+    pageSize: pageSize,
+    query: searchKeyword
   },
-  watch: [page]
+  watch: [page, searchKeyword]
 });
 
 // 에러 처리 추가
@@ -139,6 +153,11 @@ const displayedPages = computed(() => {
   }
   return pages;
 });
+
+const handleSearch = () => {
+  searchKeyword.value = searchInput.value.trim();
+  page.value = 1;
+};
 
 const isModalOpen = ref(false);
 const selectedCctv = ref(null);
