@@ -37,7 +37,7 @@
                 <span v-if="event.roadDrcType" class="text-xs text-gray-500 dark:text-gray-400">방향: {{ event.roadDrcType }}</span>
               </div>
               <h3 class="text-lg font-semibold text-gray-900 dark:text-white leading-tight">
-                {{ shortMessage(event.message) }}
+                {{ shortMessage(event.eventDetailType + ' ' + event.message) }}
               </h3>
             </div>
           </div>
@@ -48,7 +48,12 @@
         </summary>
         <div class="px-5 pb-5 pt-0 border-t border-gray-100 dark:border-gray-700">
           <div class="mt-4 space-y-2 text-sm">
+            <p class="text-gray-600 dark:text-gray-300 leading-relaxed">{{ event.lanesBlocked }}</p>
             <p class="text-gray-600 dark:text-gray-300 leading-relaxed">{{ event.message }}</p>
+            <div class="bg-gray-50 dark:bg-gray-700/50 p-3 rounded-lg flex justify-between">
+              <span class="text-gray-500">상세 타입</span>
+              <span class="font-medium text-gray-900 dark:text-white">{{ event.eventDetailType }}</span>
+            </div>
             <div class="bg-gray-50 dark:bg-gray-700/50 p-3 rounded-lg flex justify-between">
               <span class="text-gray-500">발생 시각</span>
               <span class="font-medium text-gray-900 dark:text-white">{{ formatDate(event.startDate) }}</span>
@@ -126,7 +131,7 @@ const events = ref([]);
 const loading = ref(false);
 const currentPage = ref(1);
 const totalPages = ref(1);
-const pageSize = 10;
+const pageSize = 5;
 const openedEventId = ref(null);
 
 const displayedPages = computed(() => {

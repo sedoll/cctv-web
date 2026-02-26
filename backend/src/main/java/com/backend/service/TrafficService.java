@@ -36,7 +36,7 @@ public class TrafficService {
     /**
      * 매 시간 정각(00분 00초)에 돌발상황 정보를 동기화한다.
      */
-    @Scheduled(cron = "0 0 * * * *")
+    @Scheduled(cron = "0 0,30 * * * *")
     @Transactional
     public void syncEvents() {
         try {
