@@ -5,6 +5,8 @@ import com.backend.domain.cctv.CctvRepository;
 import com.backend.domain.traffic.TrafficEvent;
 import com.backend.dto.CctvResponseDto;
 import com.backend.dto.TrafficEventResponseDto;
+import com.backend.dto.sun.SunriseSetTodayResponseDto;
+import com.backend.service.SunriseSetService;
 import com.backend.service.TrafficService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -15,8 +17,9 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.server.ResponseStatusException;
 
-import java.util.List;
+import static org.springframework.http.HttpStatus.NOT_FOUND;
 
 @Slf4j
 @RestController
@@ -24,6 +27,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class MainController {
     private final TrafficService trafficService;
+    private final SunriseSetService sunriseSetService;
     private final CctvRepository cctvRepository;
 
     @GetMapping("/events")
@@ -57,5 +61,14 @@ public class MainController {
 
         log.info(cctvPage.toString());
         return CctvResponseDto.from(cctvPage);
+    }
+
+    @GetMapping("/sun-times/today")
+    public SunriseSetTodayResponseDto getTodaySunTimes(@RequestParam("lat") double lat,
+                                                       @RequestParam("lng") double lng) {
+        log.warn("lat, lng : " + lat + lng);
+        return sunriseSetService.findTodayByNearestRegion(lat, lng)
+                .map(SunriseSetTodayResponseDto::from)
+                .orElseThrow(() -> new ResponseStatusException(NOT_FOUND, "오늘 일출/일중/일몰 데이터가 없습니다."));
     }
 }

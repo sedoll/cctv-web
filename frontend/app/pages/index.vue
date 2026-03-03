@@ -29,6 +29,40 @@
       </div>
     </div>
 
+    <div class="mb-6 rounded-lg border border-blue-200 bg-blue-50 p-4 dark:border-blue-800 dark:bg-blue-950/30">
+      <div class="flex items-center justify-between gap-4 flex-wrap">
+        <div>
+          <p class="text-sm font-semibold text-blue-900 dark:text-blue-200">내 위치 기준 천문 정보</p>
+          <p v-if="sunInfo" class="text-xs text-blue-700 dark:text-blue-300 mt-1">
+            {{ sunInfo.location }} · {{ sunInfo.locdate }}
+          </p>
+          <p v-else-if="sunInfoError" class="text-xs text-red-600 dark:text-red-300 mt-1">{{ sunInfoError }}</p>
+          <p v-else class="text-xs text-blue-700 dark:text-blue-300 mt-1">GPS 위치를 확인하는 중입니다...</p>
+        </div>
+        <button
+            @click="loadSunInfo"
+            class="px-3 py-2 border border-transparent text-xs font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700"
+        >
+          위치 다시 확인
+        </button>
+      </div>
+
+      <div class="mt-3 grid grid-cols-1 sm:grid-cols-3 gap-2" v-if="sunInfo">
+        <div class="rounded-md bg-white/80 dark:bg-gray-800 p-3">
+          <p class="text-[11px] text-gray-500 dark:text-gray-400">일출</p>
+          <p class="text-base font-bold text-gray-900 dark:text-white">{{ formatTime(sunInfo.sunrise) }}</p>
+        </div>
+        <div class="rounded-md bg-white/80 dark:bg-gray-800 p-3">
+          <p class="text-[11px] text-gray-500 dark:text-gray-400">일중</p>
+          <p class="text-base font-bold text-gray-900 dark:text-white">{{ formatTime(sunInfo.suntransit) }}</p>
+        </div>
+        <div class="rounded-md bg-white/80 dark:bg-gray-800 p-3">
+          <p class="text-[11px] text-gray-500 dark:text-gray-400">일몰</p>
+          <p class="text-base font-bold text-gray-900 dark:text-white">{{ formatTime(sunInfo.sunset) }}</p>
+        </div>
+      </div>
+    </div>
+
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
       <div v-for="(cctv, index) in cctvList" :key="cctv.id" class="bg-white dark:bg-gray-800 rounded-lg overflow-hidden shadow-sm hover:shadow-lg transition-all duration-200 border border-gray-200 dark:border-gray-700 flex flex-col group">
         <div class="relative aspect-video bg-gray-200 dark:bg-gray-700 cursor-pointer" @click="openModal(cctv)">
@@ -115,7 +149,7 @@
 </template>
 
 <script setup>
-import { computed, ref, watch } from 'vue';
+import { computed, onMounted, ref, watch } from 'vue';
 import CctvPlayer from '~/components/CctvPlayer.vue';
 import thumImg from '~/assets/img/thum-img.png';
 
@@ -200,4 +234,47 @@ const formatDate = (dateString) => {
 const getKakaoMapUrl = (event) => {
   return `https://map.kakao.com/link/map/CCTV,${event.coordY},${event.coordX}`;
 };
+
+const sunInfo = ref(null);
+const sunInfoError = ref('');
+
+const formatTime = (value) => {
+  if (!value) return '-';
+  if (value.length !== 4) return value;
+  return `${value.slice(0, 2)}:${value.slice(2, 4)}`;
+};
+
+const loadSunInfo = () => {
+  sunInfoError.value = '';
+
+  if (!process.client || !navigator.geolocation) {
+    sunInfoError.value = '브라우저에서 GPS를 지원하지 않습니다.';
+    return;
+  }
+
+  navigator.geolocation.getCurrentPosition(async (position) => {
+    try {
+      const lat = position.coords.latitude;
+      const lng = position.coords.longitude;
+      const data = await $fetch('/api/sun-times/today', {
+        params: { lat, lng }
+      });
+      sunInfo.value = data;
+    } catch (e) {
+      sunInfo.value = null;
+      sunInfoError.value = '천문 정보를 가져오지 못했습니다. 잠시 후 다시 시도해주세요.';
+      console.error('Failed to fetch sun times:', e);
+    }
+  }, () => {
+    sunInfoError.value = '위치 권한이 필요합니다.';
+  }, {
+    enableHighAccuracy: false,
+    timeout: 10000,
+    maximumAge: 300000,
+  });
+};
+
+onMounted(() => {
+  loadSunInfo();
+});
 </script>
