@@ -15,9 +15,9 @@
             <nuxt-link to="/incidents" class="px-3 py-2 text-sm font-medium transition-colors" :class="$route.path.includes('/incidents') ? 'text-blue-600 border-b-2 border-blue-600' : 'text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white'">
               돌발상황
             </nuxt-link>
-            <nuxt-link to="/community" class="px-3 py-2 text-sm font-medium transition-colors" :class="$route.path.includes('/community') ? 'text-blue-600 border-b-2 border-blue-600' : 'text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white'">
-              커뮤니티
-            </nuxt-link>
+<!--            <nuxt-link to="/community" class="px-3 py-2 text-sm font-medium transition-colors" :class="$route.path.includes('/community') ? 'text-blue-600 border-b-2 border-blue-600' : 'text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white'">-->
+<!--              커뮤니티-->
+<!--            </nuxt-link>-->
           </nav>
 
           <div class="flex items-center gap-6">
@@ -26,17 +26,17 @@
               <span v-else class="material-symbols-outlined text-xl">dark_mode</span>
             </button>
 
-            <div class="flex items-center gap-4">
-              <nuxt-link to="/login" class="text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
-                로그인
-              </nuxt-link>
+<!--            <div class="flex items-center gap-4">-->
+<!--              <nuxt-link to="/login" class="text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors">-->
+<!--                로그인-->
+<!--              </nuxt-link>-->
 
-              <span class="h-4 w-px bg-gray-300 dark:bg-gray-600"></span>
+<!--              <span class="h-4 w-px bg-gray-300 dark:bg-gray-600"></span>-->
 
-              <nuxt-link to="/signup" class="text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
-                회원가입
-              </nuxt-link>
-            </div>
+<!--              <nuxt-link to="/signup" class="text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors">-->
+<!--                회원가입-->
+<!--              </nuxt-link>-->
+<!--            </div>-->
           </div>
         </div>
       </div>

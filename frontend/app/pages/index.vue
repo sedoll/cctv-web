@@ -2,7 +2,15 @@
   <div>
     <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
       <h1 class="text-2xl font-bold text-gray-900 dark:text-white">실시간 CCTV 모니터링</h1>
-      <div class="flex w-full md:w-auto gap-2">
+      <div class="flex w-full md:w-auto gap-2 flex-col sm:flex-row">
+        <select
+            v-model="searchType"
+            class="w-full sm:w-32 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-sm text-gray-900 dark:text-white"
+        >
+          <option value="all">전체</option>
+          <option value="its">국도</option>
+          <option value="ex">고속도로</option>
+        </select>
         <div class="relative w-full md:w-64 group">
           <input
               v-model="searchInput"
@@ -107,12 +115,13 @@
 </template>
 
 <script setup>
-import { computed, ref } from 'vue';
+import { computed, ref, watch } from 'vue';
 import CctvPlayer from '~/components/CctvPlayer.vue';
 import thumImg from '~/assets/img/thum-img.png';
 
 const page = ref(1);
 const pageSize = ref(8);
+const searchType = ref('all');
 const searchInput = ref('');
 const searchKeyword = ref('');
 
@@ -120,9 +129,10 @@ const { data: cctvPage, error } = await useFetch('/api/cctvs', {
   params: {
     pageIndex: page,
     pageSize: pageSize,
+    searchType: searchType,
     query: searchKeyword
   },
-  watch: [page, searchKeyword]
+  watch: [page, searchType, searchKeyword]
 });
 
 // 에러 처리 추가
@@ -158,6 +168,10 @@ const handleSearch = () => {
   searchKeyword.value = searchInput.value.trim();
   page.value = 1;
 };
+
+watch(searchType, () => {
+  page.value = 1;
+});
 
 const isModalOpen = ref(false);
 const selectedCctv = ref(null);

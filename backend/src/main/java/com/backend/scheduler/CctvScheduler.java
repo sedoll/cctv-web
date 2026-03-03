@@ -36,6 +36,12 @@ public class CctvScheduler {
     private final String TYPE_VIDEO = "5"; // MP4
     private final String TYPE_THUMB = "3"; // 정지 영상
     private final List<String> ROAD_TYPES = Arrays.asList("ex", "its");
+    // 경도 (Longitude) - 동단/서단 기준
+    private final float MIN_X = 124.61f; // 백령도 부근
+    private final float MAX_X = 131.87f; // 독도 부근
+    // 위도 (Latitude) - 남단/북단 기준
+    private final float MIN_Y = 33.11f;  // 마라도 부근
+    private final float MAX_Y = 38.61f;  // 강원도 고성 부근
 
     /**
      * 실시간 영상 URL 및 썸네일 업데이트 (통합 실행)
@@ -53,8 +59,8 @@ public class CctvScheduler {
         try {
             // 1. 외부 API 호출 (트랜잭션 없이 수행하여 DB 커넥션 점유 최소화)
             String url = String.format(
-                    "https://openapi.its.go.kr:9443/cctvInfo?apiKey=%s&type=%s&cctvType=%s&minX=126.7&maxX=127.2&minY=37.4&maxY=37.7&getType=json",
-                    apiKey, roadType, targetType
+                    "https://openapi.its.go.kr:9443/cctvInfo?apiKey=%s&type=%s&cctvType=%s&minX=%f&maxX=%f&minY=%f&maxY=%f&getType=json",
+                    apiKey, roadType, targetType, MIN_X, MAX_X, MIN_Y, MAX_Y
             );
 
             RestTemplate restTemplate = new RestTemplate();
