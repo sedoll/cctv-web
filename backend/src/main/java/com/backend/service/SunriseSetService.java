@@ -113,7 +113,8 @@ public class SunriseSetService {
         String today = LocalDate.now(ZoneId.of("Asia/Seoul")).format(LOC_DATE_FORMAT);
         return regionLocationRepository.findAll().stream()
                 .min((r1, r2) -> Double.compare(distanceSquared(lat, lng, r1), distanceSquared(lat, lng, r2)))
-                .flatMap(region -> sunriseSetInfoRepository.findByLocdateAndRegionLocation(today, region));
+                .flatMap(region -> sunriseSetInfoRepository.findByLocdateAndRegionLocation(today, region)
+                        .or(() -> sunriseSetInfoRepository.findTopByRegionLocationOrderByLocdateDesc(region)));
     }
 
     private double distanceSquared(double lat, double lng, RegionLocation region) {

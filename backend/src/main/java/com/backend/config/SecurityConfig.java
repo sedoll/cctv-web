@@ -38,7 +38,7 @@ public class SecurityConfig {
                         .frameOptions(frame -> frame.deny())
                 )
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/auth/**", "/api/events", "/api/cctvs").permitAll()
+                        .requestMatchers("/api/auth/**", "/api/events", "/api/cctvs", "/api/sun-times/today").permitAll()
                         .requestMatchers("/api/community/posts").permitAll()
                         .anyRequest().authenticated()
                 )

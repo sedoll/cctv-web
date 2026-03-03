@@ -32,9 +32,9 @@
     <div class="mb-6 rounded-lg border border-blue-200 bg-blue-50 p-4 dark:border-blue-800 dark:bg-blue-950/30">
       <div class="flex items-center justify-between gap-4 flex-wrap">
         <div>
-          <p class="text-sm font-semibold text-blue-900 dark:text-blue-200">내 위치 기준 천문 정보</p>
+          <p class="text-sm font-semibold text-blue-900 dark:text-blue-200">내 위치 기준 일출몰 정보</p>
           <p v-if="sunInfo" class="text-xs text-blue-700 dark:text-blue-300 mt-1">
-            {{ sunInfo.location }} · {{ sunInfo.locdate }}
+            {{ sunInfo.location }} · {{ String(sunInfo.locdate).replace(/(\d{4})(\d{2})(\d{2})/, '$1-$2-$3') }}
           </p>
           <p v-else-if="sunInfoError" class="text-xs text-red-600 dark:text-red-300 mt-1">{{ sunInfoError }}</p>
           <p v-else class="text-xs text-blue-700 dark:text-blue-300 mt-1">GPS 위치를 확인하는 중입니다...</p>
@@ -240,8 +240,8 @@ const sunInfoError = ref('');
 
 const formatTime = (value) => {
   if (!value) return '-';
-  if (value.length !== 4) return value;
-  return `${value.slice(0, 2)}:${value.slice(2, 4)}`;
+  if (value.length >= 4) return `${value.slice(0, 2)}:${value.slice(2, 4)}`;
+  return value
 };
 
 const loadSunInfo = () => {
@@ -259,6 +259,7 @@ const loadSunInfo = () => {
       const data = await $fetch('/api/sun-times/today', {
         params: { lat, lng }
       });
+      console.info("data", data)
       sunInfo.value = data;
     } catch (e) {
       sunInfo.value = null;
